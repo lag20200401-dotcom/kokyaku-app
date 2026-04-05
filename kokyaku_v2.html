@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>整体院 LINEツール</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f0f7f2; min-height: 100vh; color: #1a1a2e; padding-bottom: 60px; }
+
+header { background: #2d6a4f; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+header .title { font-size: 1rem; font-weight: 700; }
+header .sub { font-size: 0.7rem; opacity: 0.75; margin-top: 1px; }
+
+.tabs { display: flex; background: #fff; border-bottom: 2px solid #d8f3dc; position: sticky; top: 57px; z-index: 99; }
+.tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 0.75rem; font-weight: 600; color: #8d99ae; cursor: pointer; border: none; background: none; font-family: inherit; transition: 0.2s; }
+.tab.active { color: #2d6a4f; border-bottom: 3px solid #2d6a4f; margin-bottom: -2px; }
+
+.page { display: none; padding: 16px; }
+.page.active { display: block; }
+
+.card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 2px 16px rgba(45,106,79,0.08); margin-bottom: 14px; }
+.sec-title { font-size: 0.9rem; font-weight: 700; color: #2d6a4f; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+
+label.field { display: block; font-size: 0.78rem; font-weight: 600; color: #6b4c3b; margin-bottom: 4px; margin-top: 12px; }
+label.field:first-of-type { margin-top: 0; }
+input[type=text], textarea, select, input[type=password] {
+  width: 100%; border: 1.5px solid #e0e0e0; border-radius: 10px;
+  padding: 10px 13px; font-size: 0.9rem; font-family: inherit;
+  background: #f9f9f9; outline: none; color: #1a1a2e;
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, textarea:focus, select:focus { border-color: #52b788; background: #fff; }
+textarea { resize: none; min-height: 72px; }
+
+.btn { width: 100%; background: #2d6a4f; color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 14px; font-family: inherit; letter-spacing: 0.03em; transition: 0.15s; -webkit-appearance: none; }
+.btn:active { opacity: 0.85; transform: scale(0.98); }
+.btn.green { background: #52b788; }
+.btn.gray { background: #e8e8e8; color: #555; }
+.btn.red { background: #e63946; }
+.btn:disabled { opacity: 0.55; }
+
+.upload-box { border: 2px dashed #b7d8c4; border-radius: 12px; padding: 20px 12px; text-align: center; cursor: pointer; background: #f4fbf6; transition: 0.2s; }
+.upload-box:active { background: #d8f3dc; }
+.upload-box .icon { font-size: 2rem; }
+.upload-box p { font-size: 0.78rem; color: #8d99ae; margin-top: 6px; line-height: 1.5; }
+
+.ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.ba-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 2px solid #b2dfdb; display: block; margin-top: 8px; }
+
+.line-bubble { background: #eaf4ea; border-radius: 14px; padding: 16px; font-size: 0.88rem; line-height: 1.9; white-space: pre-wrap; word-break: break-word; color: #1a1a1a; min-height: 220px; border: 1.5px solid #c8e6c9; }
+
+.copy-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-family: inherit; font-weight: 700; cursor: pointer; background: #52b788; color: #fff; font-size: 0.95rem; margin-top: 12px; }
+.note { font-size: 0.72rem; color: #8d99ae; margin-top: 10px; line-height: 1.7; }
+.merge-result { width: 100%; border-radius: 12px; border: 2px solid #52b788; margin-top: 12px; display: block; }
+
+/* クライアントリスト */
+.client-list { display: flex; flex-direction: column; gap: 10px; }
+.client-item { background: #f4fbf6; border: 1.5px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.15s; }
+.client-item:active { background: #d8f3dc; }
+.client-item .name { font-weight: 700; font-size: 0.92rem; color: #2d6a4f; }
+.client-item .meta { font-size: 0.72rem; color: #8d99ae; margin-top: 2px; }
+.client-item .actions { display: flex; gap: 8px; }
+.icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; }
+
+.empty-state { text-align: center; padding: 40px 20px; color: #8d99ae; font-size: 0.85rem; line-height: 1.8; }
+.empty-state .big { font-size: 2.5rem; margin-bottom: 10px; }
+
+.api-banner { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; font-size: 0.8rem; color: #6d4c00; line-height: 1.6; }
+.api-banner strong { display: block; font-size: 0.85rem; margin-bottom: 6px; }
+
+.status-ok { color: #2d6a4f; font-size: 0.78rem; margin-top: 6px; font-weight: 600; }
+.status-err { color: #e63946; font-size: 0.78rem; margin-top: 6px; }
+
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: #2d6a4f; color: #fff; padding: 12px 28px; border-radius: 30px; font-size: 0.88rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+.spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
+.modal-bg.open { display: flex; }
+.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-height: 90vh; overflow-y: auto; }
+.modal-title { font-size: 1rem; font-weight: 700; color: #2d6a4f; margin-bottom: 16px; }
+.modal-close { float: right; background: none; border: none; font-size: 1.4rem; color: #8d99ae; cursor: pointer; margin-top: -4px; }
+
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <span style="font-size:1.5rem">🌿</span>
+  <div>
+    <div class="title">整体院 LINEツール</div>
+    <div class="sub">メッセージ生成・ビフォーアフター・カルテ管理</div>
+  </div>
+</header>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('msg')">💬 メッセージ</button>
+  <button class="tab" onclick="switchTab('clients')">👤 カルテ</button>
+  <button class="tab" onclick="switchTab('ba')">✨ 画像合成</button>
+  <button class="tab" onclick="switchTab('settings')">⚙️ 設定</button>
+</div>
+
+<!-- ① メッセージ生成 -->
+<div class="page active" id="page-msg">
+  <div class="card">
+    <div class="sec-title">📋 クライアント情報</div>
+
+    <!-- カルテから呼び出し -->
+    <label class="field" style="margin-top:0">カルテから呼び出す（任意）</label>
+    <select id="clientSelect" onchange="loadClient()">
+      <option value="">── 新規入力 ──</option>
+    </select>
+
+    <label class="field">お名前</label>
+    <input type="text" id="clientName" placeholder="例：田中 花子">
+
+    <label class="field">本日の症状・状態</label>
+    <textarea id="symptoms" placeholder="例：肩まわりに強い緊張、骨盤の左右差"></textarea>
+
+    <label class="field">行った施術・ケア内容</label>
+    <textarea id="treatment" placeholder="例：肩甲骨リリース、骨盤矯正"></textarea>
+
+    <label class="field">自宅でのセルフケア</label>
+    <textarea id="homecare" placeholder="例：寝る前にストレッチ"></textarea>
+
+    <label class="field">次回来院のご案内</label>
+    <input type="text" id="nextVisit" placeholder="例：2週間後が理想的です">
+
+    <div class="row2">
+      <button class="btn gray" onclick="saveToKarte()">💾 カルテに保存</button>
+      <button class="btn" id="genBtn" onclick="generateMessage()">✨ 生成する</button>
+    </div>
+  </div>
+
+  <div class="card" id="outputCard" style="display:none">
+    <div class="sec-title">💬 生成されたメッセージ</div>
+    <div class="line-bubble" id="messageOutput"></div>
+    <button class="copy-btn" onclick="copyMessage()">📋 LINEにコピー</button>
+    <button class="btn gray" style="margin-top:8px" onclick="clearMsg()">🗑 クリア</button>
+  </div>
+</div>
+
+<!-- ② カルテ管理 -->
+<div class="page" id="page-clients">
+  <div class="card">
+    <div class="sec-title">👤 保存済みクライアント</div>
+    <div id="clientListWrap">
+      <div class="empty-state">
+        <div class="big">📋</div>
+        まだカルテがありません。<br>メッセージタブで情報を入力後<br>「カルテに保存」を押してください。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ ビフォーアフター -->
+<div class="page" id="page-ba">
+  <div class="card">
+    <div class="sec-title">✨ ビフォーアフター合成</div>
+    <p style="font-size:0.78rem;color:#8d99ae;margin-bottom:14px;line-height:1.6">2枚の写真を1枚の横並び画像にまとめてLINEに送れます</p>
+
+    <div class="ba-grid">
+      <div>
+        <label class="field" style="margin-top:0">📷 ビフォー</label>
+        <div class="upload-box" onclick="document.getElementById('beforeInput').click()">
+          <div class="icon" id="beforeIcon">⬛</div>
+          <p id="beforeTxt">タップして選択</p>
+        </div>
+        <input type="file" id="beforeInput" accept="image/*" style="display:none" onchange="onBeforeChange(event)">
+        <img id="beforePreview" class="ba-img" style="display:none">
+      </div>
+      <div>
+        <label class="field" style="margin-top:0">📷 アフター</label>
+        <div class="upload-box" onclick="document.getElementById('afterInput').click()">
+          <div class="icon" id="afterIcon">⬜</div>
+          <p id="afterTxt">タップして選択</p>
+        </div>
+        <input type="file" id="afterInput" accept="image/*" style="display:none" onchange="onAfterChange(event)">
+        <img id="afterPreview" class="ba-img" style="display:none">
+      </div>
+    </div>
+
+    <label class="field" style="margin-top:14px">ラベル表示</label>
+    <select id="labelStyle" onchange="clearMerge()">
+      <option value="ja">日本語（ビフォー / アフター）</option>
+      <option value="en">英語（Before / After）</option>
+      <option value="none">なし</option>
+    </select>
+
+    <button class="btn green" onclick="mergeImages()">🖼 横並び画像を作成</button>
+    <canvas id="mergeCanvas" style="display:none"></canvas>
+  </div>
+
+  <div class="card" id="mergeResultCard" style="display:none">
+    <div class="sec-title">✅ 完成プレビュー</div>
+    <img id="mergeResult" class="merge-result">
+    <button class="btn" onclick="downloadMerged()" style="margin-top:10px">⬇️ 画像をダウンロード</button>
+    <p class="note">※ ダウンロード後、LINEから画像を送信してください</p>
+  </div>
+</div>
+
+<!-- ④ 設定 -->
+<div class="page" id="page-settings">
+  <div class="api-banner">
+    <strong>🔑 Anthropic APIキー設定</strong>
+    メッセージ自動生成に必要です。<br>
+    <a href="https://console.anthropic.com/" target="_blank" style="color:#2d6a4f">console.anthropic.com</a> →「API Keys」→「Create Key」で取得できます。
+  </div>
+  <div class="card">
+    <div class="sec-title">⚙️ APIキー</div>
+    <label class="field" style="margin-top:0">APIキーを入力</label>
+    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
+    <button class="btn" onclick="saveApiKey()" style="margin-top:12px">💾 保存する</button>
+    <div id="apiStatus"></div>
+  </div>
+  <div class="card">
+    <div class="sec-title">📖 使い方</div>
+    <p style="font-size:0.82rem;line-height:1.9;color:#444">
+      <b>💬 メッセージ生成</b><br>
+      情報を入力→「生成」→「コピー」でLINEへ貼り付け<br><br>
+      <b>👤 カルテ保存</b><br>
+      「カルテに保存」でクライアント情報を記憶。次回から名前を選ぶだけで呼び出せます<br><br>
+      <b>✨ ビフォーアフター</b><br>
+      写真2枚→「作成」→「ダウンロード」→LINEで送信<br><br>
+      <b>🔑 APIキー</b><br>
+      初回のみ設定。この端末に保存されます
+    </p>
+  </div>
+</div>
+
+<!-- カルテ編集モーダル -->
+<div class="modal-bg" id="editModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title">✏️ カルテ編集</div>
+    <input type="hidden" id="editId">
+    <label class="field" style="margin-top:0">お名前</label>
+    <input type="text" id="editName" placeholder="例：田中 花子">
+    <label class="field">症状・状態（定型）</label>
+    <textarea id="editSymptoms" placeholder="よく出る症状を保存しておくと便利です"></textarea>
+    <label class="field">施術内容（定型）</label>
+    <textarea id="editTreatment" placeholder="定番の施術内容"></textarea>
+    <label class="field">セルフケア（定型）</label>
+    <textarea id="editHomecare" placeholder="定番のセルフケアアドバイス"></textarea>
+    <label class="field">次回来院（定型）</label>
+    <input type="text" id="editNextVisit" placeholder="例：2週間後">
+    <button class="btn" onclick="saveEdit()" style="margin-top:16px">💾 保存する</button>
+    <button class="btn gray" onclick="closeModal()" style="margin-top:8px">キャンセル</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── タブ ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const tabs = ['msg','clients','ba','settings'];
+  document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
+  document.getElementById('page-' + name).classList.add('active');
+  if (name === 'clients') renderClientList();
+}
+
+// ── APIキー ──
+window.onload = () => {
+  const k = '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';
+  if (k) {
+    document.getElementById('apiKeyInput').value = k;
+    document.getElementById('apiStatus').textContent = '✅ APIキーが保存されています';
+    document.getElementById('apiStatus').className = 'status-ok';
+  }
+  refreshClientSelect();
+  renderClientList();
+};
+
+function saveApiKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k.startsWith('sk-')) {
+    document.getElementById('apiStatus').textContent = '❌ 正しいAPIキーを入力してください';
+    document.getElementById('apiStatus').className = 'status-err';
+    return;
+  }
+  localStorage.setItem('anthropic_api_key', k);
+  document.getElementById('apiStatus').textContent = '✅ 保存しました！';
+  document.getElementById('apiStatus').className = 'status-ok';
+}
+
+// ── カルテ管理 ──
+function getKarte() {
+  return JSON.parse(localStorage.getItem('karte') || '[]');
+}
+function saveKarte(data) {
+  localStorage.setItem('karte', JSON.stringify(data));
+}
+
+function saveToKarte() {
+  const name = document.getElementById('clientName').value.trim();
+  if (!name) { showToast('⚠️ お名前を入力してください'); return; }
+  const karte = getKarte();
+  const existing = karte.find(c => c.name === name);
+  const data = {
+    id: existing ? existing.id : Date.now().toString(),
+    name,
+    symptoms: document.getElementById('symptoms').value,
+    treatment: document.getElementById('treatment').value,
+    homecare: document.getElementById('homecare').value,
+    nextVisit: document.getElementById('nextVisit').value,
+    updatedAt: new Date().toLocaleDateString('ja-JP')
+  };
+  if (existing) {
+    const idx = karte.findIndex(c => c.name === name);
+    karte[idx] = data;
+    showToast('✅ カルテを更新しました');
+  } else {
+    karte.push(data);
+    showToast('✅ カルテに保存しました');
+  }
+  saveKarte(karte);
+  refreshClientSelect();
+  renderClientList();
+}
+
+function refreshClientSelect() {
+  const sel = document.getElementById('clientSelect');
+  const karte = getKarte();
+  sel.innerHTML = '<option value="">── 新規入力 ──</option>';
+  karte.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id;
+    opt.textContent = c.name;
+    sel.appendChild(opt);
+  });
+}
+
+function loadClient() {
+  const id = document.getElementById('clientSelect').value;
+  if (!id) { clearMsg(); return; }
+  const karte = getKarte();
+  const c = karte.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('clientName').value = c.name || '';
+  document.getElementById('symptoms').value = c.symptoms || '';
+  document.getElementById('treatment').value = c.treatment || '';
+  document.getElementById('homecare').value = c.homecare || '';
+  document.getElementById('nextVisit').value = c.nextVisit || '';
+  showToast('📋 ' + c.name + ' さんのカルテを読み込みました');
+}
+
+function renderClientList() {
+  const wrap = document.getElementById('clientListWrap');
+  const karte = getKarte();
+  if (!karte.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="big">📋</div>まだカルテがありません。<br>メッセージタブで情報を入力後<br>「カルテに保存」を押してください。</div>';
+    return;
+  }
+  wrap.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'client-list';
+  karte.forEach(c => {
+    const item = document.createElement('div');
+    item.className = 'client-item';
+    item.innerHTML = `
+      <div onclick="loadAndSwitch('${c.id}')" style="flex:1">
+        <div class="name">👤 ${c.name}</div>
+        <div class="meta">最終更新：${c.updatedAt || ''}　症状：${(c.symptoms||'').slice(0,15)}${(c.symptoms||'').length>15?'…':''}</div>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" onclick="openEdit('${c.id}')" title="編集">✏️</button>
+        <button class="icon-btn" onclick="deleteClient('${c.id}')" title="削除">🗑️</button>
+      </div>`;
+    list.appendChild(item);
+  });
+  wrap.appendChild(list);
+}
+
+function loadAndSwitch(id) {
+  const karte = getKarte();
+  const c = karte.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('clientName').value = c.name || '';
+  document.getElementById('symptoms').value = c.symptoms || '';
+  document.getElementById('treatment').value = c.treatment || '';
+  document.getElementById('homecare').value = c.homecare || '';
+  document.getElementById('nextVisit').value = c.nextVisit || '';
+  document.getElementById('clientSelect').value = id;
+  switchTab('msg');
+  showToast('📋 ' + c.name + ' さんのカルテを読み込みました');
+}
+
+function deleteClient(id) {
+  if (!confirm('このカルテを削除しますか？')) return;
+  let karte = getKarte();
+  karte = karte.filter(c => c.id !== id);
+  saveKarte(karte);
+  refreshClientSelect();
+  renderClientList();
+  showToast('🗑 カルテを削除しました');
+}
+
+function openEdit(id) {
+  const karte = getKarte();
+  const c = karte.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('editId').value = c.id;
+  document.getElementById('editName').value = c.name || '';
+  document.getElementById('editSymptoms').value = c.symptoms || '';
+  document.getElementById('editTreatment').value = c.treatment || '';
+  document.getElementById('editHomecare').value = c.homecare || '';
+  document.getElementById('editNextVisit').value = c.nextVisit || '';
+  document.getElementById('editModal').classList.add('open');
+}
+
+function saveEdit() {
+  const id = document.getElementById('editId').value;
+  const karte = getKarte();
+  const idx = karte.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  karte[idx] = {
+    ...karte[idx],
+    name: document.getElementById('editName').value,
+    symptoms: document.getElementById('editSymptoms').value,
+    treatment: document.getElementById('editTreatment').value,
+    homecare: document.getElementById('editHomecare').value,
+    nextVisit: document.getElementById('editNextVisit').value,
+    updatedAt: new Date().toLocaleDateString('ja-JP')
+  };
+  saveKarte(karte);
+  refreshClientSelect();
+  renderClientList();
+  closeModal();
+  showToast('✅ カルテを更新しました');
+}
+
+function closeModal() {
+  document.getElementById('editModal').classList.remove('open');
+}
+
+// ── ビフォーアフター ──
+let beforeDataUrl = null, afterDataUrl = null, mergedDataUrl = null;
+
+function readFile(file) {
+  return new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
+}
+
+async function onBeforeChange(e) {
+  const f = e.target.files[0]; if (!f) return;
+  beforeDataUrl = await readFile(f);
+  document.getElementById('beforePreview').src = beforeDataUrl;
+  document.getElementById('beforePreview').style.display = 'block';
+  document.getElementById('beforeIcon').style.display = 'none';
+  document.getElementById('beforeTxt').style.display = 'none';
+  clearMerge();
+}
+
+async function onAfterChange(e) {
+  const f = e.target.files[0]; if (!f) return;
+  afterDataUrl = await readFile(f);
+  document.getElementById('afterPreview').src = afterDataUrl;
+  document.getElementById('afterPreview').style.display = 'block';
+  document.getElementById('afterIcon').style.display = 'none';
+  document.getElementById('afterTxt').style.display = 'none';
+  clearMerge();
+}
+
+function clearMerge() {
+  mergedDataUrl = null;
+  document.getElementById('mergeResultCard').style.display = 'none';
+}
+
+function mergeImages() {
+  if (!beforeDataUrl || !afterDataUrl) { alert('ビフォーとアフターの両方の写真を選択してください'); return; }
+  const ls = document.getElementById('labelStyle').value;
+  const A = new Image(), B = new Image(); let loaded = 0;
+  const onLoad = () => {
+    if (++loaded < 2) return;
+    const GAP=8, LH=ls==='none'?0:46, PAD=14;
+    const h = Math.max(A.naturalHeight, B.naturalHeight);
+    const wA = Math.round(A.naturalWidth*(h/A.naturalHeight));
+    const wB = Math.round(B.naturalWidth*(h/B.naturalHeight));
+    const cv = document.getElementById('mergeCanvas');
+    cv.width = wA+wB+GAP+PAD*2; cv.height = h+LH+PAD*2;
+    const ctx = cv.getContext('2d');
+    ctx.fillStyle='#f4fbf6'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.drawImage(A,PAD,PAD+LH,wA,h); ctx.drawImage(B,PAD+wA+GAP,PAD+LH,wB,h);
+    if (ls!=='none') {
+      const labs = ls==='ja'?['ビフォー','アフター']:['Before','After'];
+      [[PAD,wA,'#e76f51'],[PAD+wA+GAP,wB,'#52b788']].forEach(([x,w,c],i)=>{
+        ctx.fillStyle=c; ctx.beginPath(); ctx.roundRect(x,PAD,w,LH-6,8); ctx.fill();
+        ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(labs[i],x+w/2,PAD+(LH-6)/2);
+      });
+    }
+    ctx.strokeStyle='#fff'; ctx.lineWidth=3;
+    ctx.beginPath(); ctx.moveTo(PAD+wA+GAP/2,PAD); ctx.lineTo(PAD+wA+GAP/2,cv.height-PAD); ctx.stroke();
+    mergedDataUrl = cv.toDataURL('image/jpeg',0.92);
+    document.getElementById('mergeResult').src = mergedDataUrl;
+    document.getElementById('mergeResultCard').style.display = 'block';
+    document.getElementById('mergeResultCard').scrollIntoView({behavior:'smooth',block:'start'});
+  };
+  A.onload=onLoad; B.onload=onLoad; A.src=beforeDataUrl; B.src=afterDataUrl;
+}
+
+function downloadMerged() {
+  if (!mergedDataUrl) return;
+  const a = document.createElement('a'); a.href=mergedDataUrl; a.download='before_after.jpg'; a.click();
+}
+
+// ── メッセージ生成 ──
+async function generateMessage() {
+  const apiKey = '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';
+  const name = document.getElementById('clientName').value.trim();
+  const symptoms = document.getElementById('symptoms').value.trim();
+  if (!name && !symptoms) { alert('お名前か症状を入力してください'); return; }
+  const btn = document.getElementById('genBtn');
+  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>AI生成中…';
+  const prompt = `あなたは整体院のスタッフです。以下のクライアント情報をもとに、LINEで送る個別メッセージを作成してください。
+【クライアント名】${name||'（未記入）'}
+【症状・状態】${document.getElementById('symptoms').value||'（未記入）'}
+【施術内容】${document.getElementById('treatment').value||'（未記入）'}
+【セルフケア】${document.getElementById('homecare').value||'（未記入）'}
+【次回来院】${document.getElementById('nextVisit').value||'（未記入）'}
+ルール：絵文字と記号で読みやすく整形、15〜20行以内、専門用語なし、最後に励ましのひとこと、冒頭に「━━━━━━━━━━」区切り線、マークダウン不使用`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const data = await res.json();
+    const text = data.content?.map(i=>i.text||'').join('')||'エラーが発生しました。';
+    document.getElementById('messageOutput').textContent = text;
+    document.getElementById('outputCard').style.display='block';
+    document.getElementById('outputCard').scrollIntoView({behavior:'smooth',block:'start'});
+  } catch(e) {
+    alert('エラーが発生しました。APIキーとネット接続を確認してください。');
+  }
+  btn.disabled=false; btn.innerHTML='✨ 生成する';
+}
+
+function copyMessage() {
+  const text = document.getElementById('messageOutput').textContent;
+  navigator.clipboard.writeText(text).then(()=>showToast('✅ コピーしました！'));
+}
+
+function clearMsg() {
+  document.getElementById('clientSelect').value='';
+  ['clientName','symptoms','treatment','homecare','nextVisit'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('outputCard').style.display='none';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
