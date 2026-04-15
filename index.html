@@ -2,564 +2,860 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>整体院 LINEツール</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>整体院TAK 会計アプリ</title>
 <style>
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-body { font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif; background: #f0f7f2; min-height: 100vh; color: #1a1a2e; padding-bottom: 60px; }
+  :root {
+    --green: #2e7d52;
+    --green-light: #e8f5ee;
+    --green-mid: #4caf50;
+    --text: #1a1a1a;
+    --text-sub: #555;
+    --border: #ccc;
+    --bg: #f8f9fa;
+    --white: #fff;
+    --red: #c62828;
+    --orange: #e65100;
+    --blue: #1565c0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
 
-header { background: #2d6a4f; color: #fff; padding: 16px 20px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
-header .title { font-size: 1rem; font-weight: 700; }
-header .sub { font-size: 0.7rem; opacity: 0.75; margin-top: 1px; }
+  /* ===== HEADER ===== */
+  header { background: var(--green); color: #fff; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 18px; font-weight: 700; }
+  header span { font-size: 12px; opacity: 0.8; }
 
-.tabs { display: flex; background: #fff; border-bottom: 2px solid #d8f3dc; position: sticky; top: 57px; z-index: 99; }
-.tab { flex: 1; padding: 12px 4px; text-align: center; font-size: 0.75rem; font-weight: 600; color: #8d99ae; cursor: pointer; border: none; background: none; font-family: inherit; transition: 0.2s; }
-.tab.active { color: #2d6a4f; border-bottom: 3px solid #2d6a4f; margin-bottom: -2px; }
+  /* ===== TABS ===== */
+  .tabs { display: flex; background: #fff; border-bottom: 2px solid var(--green); overflow-x: auto; }
+  .tab { padding: 10px 18px; cursor: pointer; font-size: 13px; white-space: nowrap; border-bottom: 3px solid transparent; margin-bottom: -2px; color: var(--text-sub); }
+  .tab.active { color: var(--green); border-bottom-color: var(--green); font-weight: 700; }
 
-.page { display: none; padding: 16px; }
-.page.active { display: block; }
+  /* ===== MAIN ===== */
+  main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
 
-.card { background: #fff; border-radius: 14px; padding: 18px; box-shadow: 0 2px 16px rgba(45,106,79,0.08); margin-bottom: 14px; }
-.sec-title { font-size: 0.9rem; font-weight: 700; color: #2d6a4f; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  /* ===== CARDS ===== */
+  .card { background: var(--white); border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); padding: 16px; margin-bottom: 16px; }
+  .card-title { font-size: 15px; font-weight: 700; color: var(--green); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
 
-label.field { display: block; font-size: 0.78rem; font-weight: 600; color: #6b4c3b; margin-bottom: 4px; margin-top: 12px; }
-label.field:first-of-type { margin-top: 0; }
-input[type=text], textarea, select, input[type=password] {
-  width: 100%; border: 1.5px solid #e0e0e0; border-radius: 10px;
-  padding: 10px 13px; font-size: 0.9rem; font-family: inherit;
-  background: #f9f9f9; outline: none; color: #1a1a2e;
-  -webkit-appearance: none; appearance: none;
-}
-input:focus, textarea:focus, select:focus { border-color: #52b788; background: #fff; }
-textarea { resize: none; min-height: 72px; }
+  /* ===== FORMS ===== */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .form-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+  .form-grid.full { grid-template-columns: 1fr; }
+  .form-group { display: flex; flex-direction: column; gap: 4px; }
+  .form-group.span2 { grid-column: span 2; }
+  label { font-size: 12px; color: var(--text-sub); font-weight: 600; }
+  input, select, textarea {
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+    font-size: 14px; font-family: inherit; width: 100%;
+    transition: border-color .2s;
+  }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--green); }
+  textarea { resize: vertical; min-height: 60px; }
 
-.btn { width: 100%; background: #2d6a4f; color: #fff; border: none; border-radius: 12px; padding: 15px; font-size: 0.95rem; font-weight: 700; cursor: pointer; margin-top: 14px; font-family: inherit; letter-spacing: 0.03em; transition: 0.15s; -webkit-appearance: none; }
-.btn:active { opacity: 0.85; transform: scale(0.98); }
-.btn.green { background: #52b788; }
-.btn.gray { background: #e8e8e8; color: #555; }
-.btn.red { background: #e63946; }
-.btn:disabled { opacity: 0.55; }
+  /* ===== BUTTONS ===== */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; font-family: inherit; transition: opacity .15s; }
+  .btn:hover { opacity: .85; }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-secondary { background: #eee; color: var(--text); }
+  .btn-danger { background: var(--red); color: #fff; }
+  .btn-orange { background: var(--orange); color: #fff; }
+  .btn-blue { background: var(--blue); color: #fff; }
+  .btn-sm { padding: 5px 10px; font-size: 12px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 
-.upload-box { border: 2px dashed #b7d8c4; border-radius: 12px; padding: 20px 12px; text-align: center; cursor: pointer; background: #f4fbf6; transition: 0.2s; }
-.upload-box:active { background: #d8f3dc; }
-.upload-box .icon { font-size: 2rem; }
-.upload-box p { font-size: 0.78rem; color: #8d99ae; margin-top: 6px; line-height: 1.5; }
+  /* ===== TABLE ===== */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th { background: var(--green-light); color: var(--green); padding: 8px 10px; text-align: left; font-weight: 700; white-space: nowrap; }
+  td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: middle; }
+  tr:hover td { background: #fafff8; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+  .badge-green { background: var(--green-light); color: var(--green); }
+  .badge-orange { background: #fff3e0; color: var(--orange); }
+  .badge-blue { background: #e3f2fd; color: var(--blue); }
 
-.ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ba-img { width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px; border: 2px solid #b2dfdb; display: block; margin-top: 8px; }
+  /* ===== RECEIPT ===== */
+  .receipt-preview { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 20px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; max-width: 320px; margin: 0 auto; }
+  .receipt-preview h2 { text-align: center; font-size: 16px; margin-bottom: 4px; }
+  .receipt-preview .sub { text-align: center; font-size: 11px; color: var(--text-sub); margin-bottom: 12px; }
+  .receipt-line { display: flex; justify-content: space-between; }
+  .receipt-line.total { border-top: 1px solid #333; margin-top: 6px; padding-top: 6px; font-weight: 700; font-size: 15px; }
+  .receipt-line.tax { font-size: 11px; color: var(--text-sub); }
 
-.line-bubble { background: #eaf4ea; border-radius: 14px; padding: 16px; font-size: 0.88rem; line-height: 1.9; white-space: pre-wrap; word-break: break-word; color: #1a1a1a; min-height: 220px; border: 1.5px solid #c8e6c9; }
+  /* ===== IMPORT ===== */
+  .import-zone { border: 2px dashed var(--border); border-radius: 8px; padding: 32px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; }
+  .import-zone:hover, .import-zone.drag { border-color: var(--green); background: var(--green-light); }
+  .import-zone p { color: var(--text-sub); margin-top: 8px; font-size: 13px; }
+  .import-icon { font-size: 40px; }
+  #importFileInput { display: none; }
+  .import-result { margin-top: 12px; padding: 10px 14px; border-radius: 6px; font-size: 13px; }
+  .import-result.success { background: var(--green-light); color: var(--green); }
+  .import-result.error { background: #ffebee; color: var(--red); }
+  .import-result.info { background: #e3f2fd; color: var(--blue); }
 
-.copy-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-family: inherit; font-weight: 700; cursor: pointer; background: #52b788; color: #fff; font-size: 0.95rem; margin-top: 12px; }
-.note { font-size: 0.72rem; color: #8d99ae; margin-top: 10px; line-height: 1.7; }
-.merge-result { width: 100%; border-radius: 12px; border: 2px solid #52b788; margin-top: 12px; display: block; }
+  /* ===== DASHBOARD ===== */
+  .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+  .stat-card { background: var(--white); border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); text-align: center; }
+  .stat-label { font-size: 11px; color: var(--text-sub); margin-bottom: 4px; }
+  .stat-value { font-size: 22px; font-weight: 700; color: var(--green); }
+  .stat-sub { font-size: 11px; color: var(--text-sub); margin-top: 2px; }
 
-/* クライアントリスト */
-.client-list { display: flex; flex-direction: column; gap: 10px; }
-.client-item { background: #f4fbf6; border: 1.5px solid #c8e6c9; border-radius: 12px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.15s; }
-.client-item:active { background: #d8f3dc; }
-.client-item .name { font-weight: 700; font-size: 0.92rem; color: #2d6a4f; }
-.client-item .meta { font-size: 0.72rem; color: #8d99ae; margin-top: 2px; }
-.client-item .actions { display: flex; gap: 8px; }
-.icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; padding: 4px; }
+  /* ===== SEARCH ===== */
+  .search-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .search-bar input { flex: 1; }
 
-.empty-state { text-align: center; padding: 40px 20px; color: #8d99ae; font-size: 0.85rem; line-height: 1.8; }
-.empty-state .big { font-size: 2.5rem; margin-bottom: 10px; }
+  /* ===== MODAL ===== */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 1000; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: #fff; border-radius: 10px; padding: 20px; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto; }
+  .modal-title { font-size: 16px; font-weight: 700; color: var(--green); margin-bottom: 14px; }
+  .modal-btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
-.api-banner { background: #fff8e1; border: 1.5px solid #ffe082; border-radius: 12px; padding: 14px 16px; margin-bottom: 14px; font-size: 0.8rem; color: #6d4c00; line-height: 1.6; }
-.api-banner strong { display: block; font-size: 0.85rem; margin-bottom: 6px; }
-
-.status-ok { color: #2d6a4f; font-size: 0.78rem; margin-top: 6px; font-weight: 600; }
-.status-err { color: #e63946; font-size: 0.78rem; margin-top: 6px; }
-
-.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(10px); background: #2d6a4f; color: #fff; padding: 12px 28px; border-radius: 30px; font-size: 0.88rem; opacity: 0; transition: 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
-.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-.spinner { display: inline-block; width: 16px; height: 16px; border: 3px solid rgba(255,255,255,0.35); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 8px; vertical-align: middle; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; align-items: flex-end; justify-content: center; }
-.modal-bg.open { display: flex; }
-.modal { background: #fff; border-radius: 20px 20px 0 0; padding: 24px 20px 40px; width: 100%; max-height: 90vh; overflow-y: auto; }
-.modal-title { font-size: 1rem; font-weight: 700; color: #2d6a4f; margin-bottom: 16px; }
-.modal-close { float: right; background: none; border: none; font-size: 1.4rem; color: #8d99ae; cursor: pointer; margin-top: -4px; }
-
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+  /* ===== MISC ===== */
+  .section-label { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: .05em; margin: 14px 0 8px; }
+  .empty-state { text-align: center; padding: 32px; color: var(--text-sub); }
+  .empty-state .emoji { font-size: 36px; margin-bottom: 8px; }
+  @media (max-width: 600px) {
+    .form-grid { grid-template-columns: 1fr; }
+    .form-grid.triple { grid-template-columns: 1fr 1fr; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .form-group.span2 { grid-column: span 1; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <span style="font-size:1.5rem">🌿</span>
-  <div>
-    <div class="title">整体院 LINEツール</div>
-    <div class="sub">メッセージ生成・ビフォーアフター・カルテ管理</div>
-  </div>
+  <h1>🌿 整体院TAK 会計アプリ</h1>
+  <span id="headerDate"></span>
 </header>
 
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('msg')">💬 メッセージ</button>
-  <button class="tab" onclick="switchTab('clients')">👤 カルテ</button>
-  <button class="tab" onclick="switchTab('ba')">✨ 画像合成</button>
-  <button class="tab" onclick="switchTab('settings')">⚙️ 設定</button>
+  <div class="tab active" onclick="showPanel('dash')">📊 ダッシュボード</div>
+  <div class="tab" onclick="showPanel('checkout')">💴 会計</div>
+  <div class="tab" onclick="showPanel('customers')">👤 顧客管理</div>
+  <div class="tab" onclick="showPanel('history')">📋 来院履歴</div>
+  <div class="tab" onclick="showPanel('import')">📥 CSVインポート</div>
 </div>
 
-<!-- ① メッセージ生成 -->
-<div class="page active" id="page-msg">
+<main>
+
+<!-- ========== DASHBOARD ========== -->
+<div id="panel-dash" class="panel active">
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-label">今月売上</div><div class="stat-value" id="stat-month">¥0</div><div class="stat-sub" id="stat-month-count">0件</div></div>
+    <div class="stat-card"><div class="stat-label">本日売上</div><div class="stat-value" id="stat-today">¥0</div><div class="stat-sub" id="stat-today-count">0件</div></div>
+    <div class="stat-card"><div class="stat-label">顧客数</div><div class="stat-value" id="stat-customers">0</div><div class="stat-sub">登録顧客</div></div>
+  </div>
   <div class="card">
-    <div class="sec-title">📋 クライアント情報</div>
+    <div class="card-title">📅 直近の会計履歴</div>
+    <div class="table-wrap"><table id="recent-table">
+      <thead><tr><th>日時</th><th>顧客名</th><th>メニュー</th><th>金額</th></tr></thead>
+      <tbody id="recent-tbody"></tbody>
+    </table></div>
+  </div>
+</div>
 
-    <!-- カルテから呼び出し -->
-    <label class="field" style="margin-top:0">カルテから呼び出す（任意）</label>
-    <select id="clientSelect" onchange="loadClient()">
-      <option value="">── 新規入力 ──</option>
-    </select>
-
-    <label class="field">お名前</label>
-    <input type="text" id="clientName" placeholder="例：田中 花子">
-
-    <label class="field">本日の症状・状態</label>
-    <textarea id="symptoms" placeholder="例：肩まわりに強い緊張、骨盤の左右差"></textarea>
-
-    <label class="field">行った施術・ケア内容</label>
-    <textarea id="treatment" placeholder="例：肩甲骨リリース、骨盤矯正"></textarea>
-
-    <label class="field">自宅でのセルフケア</label>
-    <textarea id="homecare" placeholder="例：寝る前にストレッチ"></textarea>
-
-    <label class="field">次回来院のご案内</label>
-    <input type="text" id="nextVisit" placeholder="例：2週間後が理想的です">
-
-    <div class="row2">
-      <button class="btn gray" onclick="saveToKarte()">💾 カルテに保存</button>
-      <button class="btn" id="genBtn" onclick="generateMessage()">✨ 生成する</button>
+<!-- ========== CHECKOUT ========== -->
+<div id="panel-checkout" class="panel">
+  <div class="card">
+    <div class="card-title">💴 会計入力</div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>顧客選択</label>
+        <select id="co-customer">
+          <option value="">-- 顧客を選択 --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>来院日</label>
+        <input type="date" id="co-date">
+      </div>
+    </div>
+    <div class="section-label">施術メニュー</div>
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>メニュー</label>
+        <select id="co-menu" onchange="menuChanged()">
+          <option value="">選択</option>
+          <option value="初回体験コース" data-price="2980">初回体験コース</option>
+          <option value="深層リリース整体" data-price="11000">深層リリース整体</option>
+          <option value="月イチ整体" data-price="8800">月イチ整体</option>
+          <option value="鍼灸治療" data-price="8800">鍼灸治療</option>
+          <option value="Indiba施術" data-price="11000">Indiba施術</option>
+          <option value="カスタム" data-price="0">カスタム入力</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>金額（税込）</label>
+        <input type="number" id="co-price" placeholder="例: 11000" min="0">
+      </div>
+      <div class="form-group">
+        <label>支払方法</label>
+        <select id="co-pay">
+          <option value="現金">現金</option>
+          <option value="カード">カード</option>
+          <option value="PayPay">PayPay</option>
+          <option value="LINE Pay">LINE Pay</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>メモ</label>
+      <textarea id="co-memo" rows="2" placeholder="特記事項など"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addCheckout()">✅ 会計を登録</button>
+      <button class="btn btn-secondary" onclick="previewReceipt()">🧾 領収書プレビュー</button>
     </div>
   </div>
 
-  <div class="card" id="outputCard" style="display:none">
-    <div class="sec-title">💬 生成されたメッセージ</div>
-    <div class="line-bubble" id="messageOutput"></div>
-    <button class="copy-btn" onclick="copyMessage()">📋 LINEにコピー</button>
-    <button class="btn gray" style="margin-top:8px" onclick="clearMsg()">🗑 クリア</button>
-  </div>
-</div>
-
-<!-- ② カルテ管理 -->
-<div class="page" id="page-clients">
-  <div class="card">
-    <div class="sec-title">👤 保存済みクライアント</div>
-    <div id="clientListWrap">
-      <div class="empty-state">
-        <div class="big">📋</div>
-        まだカルテがありません。<br>メッセージタブで情報を入力後<br>「カルテに保存」を押してください。
-      </div>
+  <div class="card" id="receipt-card" style="display:none">
+    <div class="card-title">🧾 領収書プレビュー</div>
+    <div id="receipt-content"></div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="window.print()">🖨 印刷</button>
     </div>
   </div>
 </div>
 
-<!-- ③ ビフォーアフター -->
-<div class="page" id="page-ba">
+<!-- ========== CUSTOMERS ========== -->
+<div id="panel-customers" class="panel">
   <div class="card">
-    <div class="sec-title">✨ ビフォーアフター合成</div>
-    <p style="font-size:0.78rem;color:#8d99ae;margin-bottom:14px;line-height:1.6">2枚の写真を1枚の横並び画像にまとめてLINEに送れます</p>
-
-    <div class="ba-grid">
-      <div>
-        <label class="field" style="margin-top:0">📷 ビフォー</label>
-        <div class="upload-box" onclick="document.getElementById('beforeInput').click()">
-          <div class="icon" id="beforeIcon">⬛</div>
-          <p id="beforeTxt">タップして選択</p>
-        </div>
-        <input type="file" id="beforeInput" accept="image/*" style="display:none" onchange="onBeforeChange(event)">
-        <img id="beforePreview" class="ba-img" style="display:none">
+    <div class="card-title">👤 顧客登録・編集</div>
+    <input type="hidden" id="cu-id">
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>顧客No（任意）</label>
+        <input type="text" id="cu-no" placeholder="例: 001">
       </div>
-      <div>
-        <label class="field" style="margin-top:0">📷 アフター</label>
-        <div class="upload-box" onclick="document.getElementById('afterInput').click()">
-          <div class="icon" id="afterIcon">⬜</div>
-          <p id="afterTxt">タップして選択</p>
-        </div>
-        <input type="file" id="afterInput" accept="image/*" style="display:none" onchange="onAfterChange(event)">
-        <img id="afterPreview" class="ba-img" style="display:none">
+      <div class="form-group">
+        <label>氏名 *</label>
+        <input type="text" id="cu-name" placeholder="山田 花子">
+      </div>
+      <div class="form-group">
+        <label>ふりがな</label>
+        <input type="text" id="cu-kana" placeholder="やまだ はなこ">
       </div>
     </div>
-
-    <label class="field" style="margin-top:14px">ラベル表示</label>
-    <select id="labelStyle" onchange="clearMerge()">
-      <option value="ja">日本語（ビフォー / アフター）</option>
-      <option value="en">英語（Before / After）</option>
-      <option value="none">なし</option>
-    </select>
-
-    <button class="btn green" onclick="mergeImages()">🖼 横並び画像を作成</button>
-    <canvas id="mergeCanvas" style="display:none"></canvas>
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>性別</label>
+        <select id="cu-gender">
+          <option value="">未設定</option>
+          <option value="女性">女性</option>
+          <option value="男性">男性</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>生年月日</label>
+        <input type="date" id="cu-birth">
+      </div>
+      <div class="form-group">
+        <label>職業</label>
+        <input type="text" id="cu-job" placeholder="例: 看護師">
+      </div>
+    </div>
+    <div class="form-grid triple">
+      <div class="form-group">
+        <label>電話番号</label>
+        <input type="tel" id="cu-tel" placeholder="080-0000-0000">
+      </div>
+      <div class="form-group">
+        <label>メールアドレス</label>
+        <input type="email" id="cu-email" placeholder="example@email.com">
+      </div>
+      <div class="form-group">
+        <label>郵便番号</label>
+        <input type="text" id="cu-zip" placeholder="000-0000" maxlength="8">
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>住所</label>
+      <input type="text" id="cu-address" placeholder="静岡県袋井市旭町1-1-1">
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>来院動機</label>
+      <input type="text" id="cu-motive" placeholder="例: 腰痛、紹介など">
+    </div>
+    <div class="form-group" style="margin-top:10px">
+      <label>メモ</label>
+      <textarea id="cu-memo" rows="2" placeholder="特記事項など"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="saveCustomer()">💾 保存</button>
+      <button class="btn btn-secondary" onclick="clearCustomerForm()">🔄 クリア</button>
+    </div>
   </div>
 
-  <div class="card" id="mergeResultCard" style="display:none">
-    <div class="sec-title">✅ 完成プレビュー</div>
-    <img id="mergeResult" class="merge-result">
-    <button class="btn" onclick="downloadMerged()" style="margin-top:10px">⬇️ 画像をダウンロード</button>
-    <p class="note">※ ダウンロード後、LINEから画像を送信してください</p>
+  <div class="card">
+    <div class="card-title">📋 顧客一覧</div>
+    <div class="search-bar">
+      <input type="text" id="cu-search" placeholder="氏名・ふりがな・電話で検索…" oninput="renderCustomerList()">
+      <button class="btn btn-secondary btn-sm" onclick="exportCustomersCSV()">⬇ CSVエクスポート</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>No</th><th>氏名</th><th>電話</th><th>来院回数</th><th>最終来院</th><th>操作</th></tr></thead>
+      <tbody id="customer-tbody"></tbody>
+    </table></div>
   </div>
 </div>
 
-<!-- ④ 設定 -->
-<div class="page" id="page-settings">
-  <div class="api-banner">
-    <strong>🔑 Anthropic APIキー設定</strong>
-    メッセージ自動生成に必要です。<br>
-    <a href="https://console.anthropic.com/" target="_blank" style="color:#2d6a4f">console.anthropic.com</a> →「API Keys」→「Create Key」で取得できます。
-  </div>
+<!-- ========== HISTORY ========== -->
+<div id="panel-history" class="panel">
   <div class="card">
-    <div class="sec-title">⚙️ APIキー</div>
-    <label class="field" style="margin-top:0">APIキーを入力</label>
-    <input type="password" id="apiKeyInput" placeholder="sk-ant-...">
-    <button class="btn" onclick="saveApiKey()" style="margin-top:12px">💾 保存する</button>
-    <div id="apiStatus"></div>
+    <div class="card-title">📋 来院・会計履歴</div>
+    <div class="search-bar">
+      <input type="text" id="hi-search" placeholder="顧客名・メニューで検索…" oninput="renderHistory()">
+      <input type="month" id="hi-month" onchange="renderHistory()" style="max-width:150px">
+      <button class="btn btn-secondary btn-sm" onclick="exportHistoryCSV()">⬇ CSV</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>日付</th><th>顧客名</th><th>メニュー</th><th>金額</th><th>支払</th><th>メモ</th><th>削除</th></tr></thead>
+      <tbody id="history-tbody"></tbody>
+    </table></div>
   </div>
+</div>
+
+<!-- ========== CSV IMPORT ========== -->
+<div id="panel-import" class="panel">
   <div class="card">
-    <div class="sec-title">📖 使い方</div>
-    <p style="font-size:0.82rem;line-height:1.9;color:#444">
-      <b>💬 メッセージ生成</b><br>
-      情報を入力→「生成」→「コピー」でLINEへ貼り付け<br><br>
-      <b>👤 カルテ保存</b><br>
-      「カルテに保存」でクライアント情報を記憶。次回から名前を選ぶだけで呼び出せます<br><br>
-      <b>✨ ビフォーアフター</b><br>
-      写真2枚→「作成」→「ダウンロード」→LINEで送信<br><br>
-      <b>🔑 APIキー</b><br>
-      初回のみ設定。この端末に保存されます
+    <div class="card-title">📥 囲い込み職人 CSVインポート</div>
+    <p style="font-size:13px; color:var(--text-sub); margin-bottom:14px;">
+      囲い込み職人からエクスポートしたCSVファイル（Shift-JIS）を読み込みます。<br>
+      既存顧客と顧客Noが一致する場合は上書き確認します。
+    </p>
+
+    <div class="import-zone" id="importZone" onclick="document.getElementById('importFileInput').click()"
+         ondragover="event.preventDefault(); this.classList.add('drag')"
+         ondragleave="this.classList.remove('drag')"
+         ondrop="handleDrop(event)">
+      <div class="import-icon">📂</div>
+      <p>クリックまたはCSVファイルをドラッグ＆ドロップ</p>
+      <p style="font-size:11px; margin-top:4px;">対応形式: .csv（Shift-JIS / UTF-8）</p>
+    </div>
+    <input type="file" id="importFileInput" accept=".csv" onchange="handleFileSelect(event)">
+
+    <div id="importResult"></div>
+  </div>
+
+  <div class="card" id="importPreviewCard" style="display:none">
+    <div class="card-title">📋 インポートプレビュー</div>
+    <p id="importPreviewCount" style="font-size:13px; margin-bottom:10px; color:var(--text-sub);"></p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>顧客No</th><th>氏名</th><th>ふりがな</th><th>電話</th><th>郵便番号</th><th>住所</th><th>メール</th><th>職業</th><th>状態</th></tr></thead>
+      <tbody id="importPreviewBody"></tbody>
+    </table></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="confirmImport()">✅ インポート実行</button>
+      <button class="btn btn-secondary" onclick="cancelImport()">キャンセル</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📌 囲い込み職人 CSVフォーマット</div>
+    <p style="font-size:12px; color:var(--text-sub); line-height:1.8;">
+      対応列：顧客No, 顧客名, ふりがな, 性別, <strong>郵便番号, 住所１, 住所２</strong>, 電話-1, 電話-2, <strong>メールアドレス</strong>, 生年月日, 年齢, 年代, 職業, 動機, 最終来店日, 来店回数<br>
+      文字コード: <strong>Shift-JIS</strong>（自動検出）
     </p>
   </div>
 </div>
 
-<!-- カルテ編集モーダル -->
-<div class="modal-bg" id="editModal">
+</main>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">×</button>
-    <div class="modal-title">✏️ カルテ編集</div>
-    <input type="hidden" id="editId">
-    <label class="field" style="margin-top:0">お名前</label>
-    <input type="text" id="editName" placeholder="例：田中 花子">
-    <label class="field">症状・状態（定型）</label>
-    <textarea id="editSymptoms" placeholder="よく出る症状を保存しておくと便利です"></textarea>
-    <label class="field">施術内容（定型）</label>
-    <textarea id="editTreatment" placeholder="定番の施術内容"></textarea>
-    <label class="field">セルフケア（定型）</label>
-    <textarea id="editHomecare" placeholder="定番のセルフケアアドバイス"></textarea>
-    <label class="field">次回来院（定型）</label>
-    <input type="text" id="editNextVisit" placeholder="例：2週間後">
-    <button class="btn" onclick="saveEdit()" style="margin-top:16px">💾 保存する</button>
-    <button class="btn gray" onclick="closeModal()" style="margin-top:8px">キャンセル</button>
+    <div class="modal-title" id="modalTitle">確認</div>
+    <div id="modalBody"></div>
+    <div class="modal-btns" id="modalBtns"></div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
-
 <script>
-// ── タブ ──
-function switchTab(name) {
+// ===== STATE =====
+let customers = JSON.parse(localStorage.getItem('tak_customers') || '[]');
+let history = JSON.parse(localStorage.getItem('tak_history') || '[]');
+let pendingImport = [];
+
+function save() {
+  localStorage.setItem('tak_customers', JSON.stringify(customers));
+  localStorage.setItem('tak_history', JSON.stringify(history));
+}
+
+// ===== UTILS =====
+function fmt(n) { return '¥' + Number(n).toLocaleString('ja-JP'); }
+function today() { return new Date().toISOString().slice(0,10); }
+function nowStr() { return new Date().toISOString(); }
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+// ===== INIT =====
+document.getElementById('headerDate').textContent = new Date().toLocaleDateString('ja-JP', {year:'numeric',month:'long',day:'numeric',weekday:'short'});
+document.getElementById('co-date').value = today();
+const hiMonth = document.getElementById('hi-month');
+hiMonth.value = today().slice(0,7);
+
+// ===== TABS =====
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const tabs = ['msg','clients','ba','settings'];
-  document.querySelectorAll('.tab')[tabs.indexOf(name)].classList.add('active');
-  document.getElementById('page-' + name).classList.add('active');
-  if (name === 'clients') renderClientList();
+  document.getElementById('panel-' + id).classList.add('active');
+  event.target.classList.add('active');
+  if (id === 'dash') renderDash();
+  if (id === 'customers') { renderCustomerList(); populateCustomerSelect(); }
+  if (id === 'history') renderHistory();
+  if (id === 'checkout') populateCustomerSelect();
 }
 
-// ── APIキー ──
-window.onload = () => {
-  const k = 'sk-ant-api03-aiBGWNxnZZvPheuQL'+'w5sjVAIk5kXr5h71YSXfUtpMluItGa'+'rnrIXcIHx_JCsX6a7bL8G2d9Jbotw-gfZVZKLCA-RYPEnAAA';
-  if (k) {
-    document.getElementById('apiKeyInput').value = k;
-    document.getElementById('apiStatus').textContent = '✅ APIキーが保存されています';
-    document.getElementById('apiStatus').className = 'status-ok';
-  }
-  refreshClientSelect();
-  renderClientList();
-};
-
-function saveApiKey() {
-  const k = document.getElementById('apiKeyInput').value.trim();
-  if (!k.startsWith('sk-')) {
-    document.getElementById('apiStatus').textContent = '❌ 正しいAPIキーを入力してください';
-    document.getElementById('apiStatus').className = 'status-err';
-    return;
-  }
-  localStorage.setItem('anthropic_api_key', k);
-  document.getElementById('apiStatus').textContent = '✅ 保存しました！';
-  document.getElementById('apiStatus').className = 'status-ok';
-}
-
-// ── カルテ管理 ──
-function getKarte() {
-  return JSON.parse(localStorage.getItem('karte') || '[]');
-}
-function saveKarte(data) {
-  localStorage.setItem('karte', JSON.stringify(data));
-}
-
-function saveToKarte() {
-  const name = document.getElementById('clientName').value.trim();
-  if (!name) { showToast('⚠️ お名前を入力してください'); return; }
-  const karte = getKarte();
-  const existing = karte.find(c => c.name === name);
-  const data = {
-    id: existing ? existing.id : Date.now().toString(),
-    name,
-    symptoms: document.getElementById('symptoms').value,
-    treatment: document.getElementById('treatment').value,
-    homecare: document.getElementById('homecare').value,
-    nextVisit: document.getElementById('nextVisit').value,
-    updatedAt: new Date().toLocaleDateString('ja-JP')
-  };
-  if (existing) {
-    const idx = karte.findIndex(c => c.name === name);
-    karte[idx] = data;
-    showToast('✅ カルテを更新しました');
-  } else {
-    karte.push(data);
-    showToast('✅ カルテに保存しました');
-  }
-  saveKarte(karte);
-  refreshClientSelect();
-  renderClientList();
-}
-
-function refreshClientSelect() {
-  const sel = document.getElementById('clientSelect');
-  const karte = getKarte();
-  sel.innerHTML = '<option value="">── 新規入力 ──</option>';
-  karte.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = c.name;
-    sel.appendChild(opt);
+// ===== CUSTOMER SELECT =====
+function populateCustomerSelect() {
+  const sel = document.getElementById('co-customer');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">-- 顧客を選択 --</option>';
+  [...customers].sort((a,b) => a.name.localeCompare(b.name, 'ja')).forEach(c => {
+    const o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = (c.no ? `[${c.no}] ` : '') + c.name + (c.kana ? ` (${c.kana})` : '');
+    sel.appendChild(o);
   });
+  sel.value = cur;
 }
 
-function loadClient() {
-  const id = document.getElementById('clientSelect').value;
-  if (!id) { clearMsg(); return; }
-  const karte = getKarte();
-  const c = karte.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('clientName').value = c.name || '';
-  document.getElementById('symptoms').value = c.symptoms || '';
-  document.getElementById('treatment').value = c.treatment || '';
-  document.getElementById('homecare').value = c.homecare || '';
-  document.getElementById('nextVisit').value = c.nextVisit || '';
-  showToast('📋 ' + c.name + ' さんのカルテを読み込みました');
-}
-
-function renderClientList() {
-  const wrap = document.getElementById('clientListWrap');
-  const karte = getKarte();
-  if (!karte.length) {
-    wrap.innerHTML = '<div class="empty-state"><div class="big">📋</div>まだカルテがありません。<br>メッセージタブで情報を入力後<br>「カルテに保存」を押してください。</div>';
-    return;
+// ===== MENU PRICE =====
+function menuChanged() {
+  const sel = document.getElementById('co-menu');
+  const opt = sel.options[sel.selectedIndex];
+  const price = opt.dataset.price;
+  if (price !== undefined && price !== '0') {
+    document.getElementById('co-price').value = price;
   }
-  wrap.innerHTML = '';
-  const list = document.createElement('div');
-  list.className = 'client-list';
-  karte.forEach(c => {
-    const item = document.createElement('div');
-    item.className = 'client-item';
-    item.innerHTML = `
-      <div onclick="loadAndSwitch('${c.id}')" style="flex:1">
-        <div class="name">👤 ${c.name}</div>
-        <div class="meta">最終更新：${c.updatedAt || ''}　症状：${(c.symptoms||'').slice(0,15)}${(c.symptoms||'').length>15?'…':''}</div>
+}
+
+// ===== CHECKOUT =====
+function addCheckout() {
+  const cid = document.getElementById('co-customer').value;
+  const date = document.getElementById('co-date').value;
+  const menu = document.getElementById('co-menu').value;
+  const price = parseInt(document.getElementById('co-price').value) || 0;
+  const pay = document.getElementById('co-pay').value;
+  const memo = document.getElementById('co-memo').value;
+  if (!cid) { alert('顧客を選択してください'); return; }
+  if (!menu) { alert('メニューを選択してください'); return; }
+  if (!price) { alert('金額を入力してください'); return; }
+  const c = customers.find(x => x.id === cid);
+  history.unshift({ id: genId(), customerId: cid, customerName: c ? c.name : '', date, menu, price, pay, memo, createdAt: nowStr() });
+  if (c) { c.lastVisit = date; c.visitCount = (c.visitCount || 0) + 1; }
+  save();
+  alert('会計を登録しました！');
+  document.getElementById('co-menu').value = '';
+  document.getElementById('co-price').value = '';
+  document.getElementById('co-memo').value = '';
+  renderDash();
+}
+
+// ===== RECEIPT PREVIEW =====
+function previewReceipt() {
+  const cid = document.getElementById('co-customer').value;
+  const menu = document.getElementById('co-menu').value || '施術';
+  const price = parseInt(document.getElementById('co-price').value) || 0;
+  const date = document.getElementById('co-date').value;
+  const c = customers.find(x => x.id === cid);
+  const name = c ? c.name : '様';
+  const tax = Math.round(price - price / 1.1);
+  const card = document.getElementById('receipt-card');
+  card.style.display = 'block';
+  document.getElementById('receipt-content').innerHTML = `
+    <div class="receipt-preview">
+      <h2>領 収 書</h2>
+      <div class="sub">整体院TAK 旭町院</div>
+      <div style="margin:8px 0;font-size:12px">${date} 発行</div>
+      <div style="margin:8px 0"><strong>${name} 様</strong></div>
+      <hr style="margin:8px 0">
+      <div class="receipt-line"><span>${menu}</span><span>${fmt(price)}</span></div>
+      <div class="receipt-line total"><span>合 計</span><span>${fmt(price)}</span></div>
+      <div class="receipt-line tax"><span>（内消費税10%）</span><span>${fmt(tax)}</span></div>
+      <hr style="margin:8px 0">
+      <div style="font-size:11px;margin-top:8px;text-align:center">
+        整体院TAK 旭町院<br>
+        Assist24フィットネスジム内<br>
+        静岡県袋井市旭町
       </div>
-      <div class="actions">
-        <button class="icon-btn" onclick="openEdit('${c.id}')" title="編集">✏️</button>
-        <button class="icon-btn" onclick="deleteClient('${c.id}')" title="削除">🗑️</button>
-      </div>`;
-    list.appendChild(item);
-  });
-  wrap.appendChild(list);
+    </div>`;
 }
 
-function loadAndSwitch(id) {
-  const karte = getKarte();
-  const c = karte.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('clientName').value = c.name || '';
-  document.getElementById('symptoms').value = c.symptoms || '';
-  document.getElementById('treatment').value = c.treatment || '';
-  document.getElementById('homecare').value = c.homecare || '';
-  document.getElementById('nextVisit').value = c.nextVisit || '';
-  document.getElementById('clientSelect').value = id;
-  switchTab('msg');
-  showToast('📋 ' + c.name + ' さんのカルテを読み込みました');
-}
-
-function deleteClient(id) {
-  if (!confirm('このカルテを削除しますか？')) return;
-  let karte = getKarte();
-  karte = karte.filter(c => c.id !== id);
-  saveKarte(karte);
-  refreshClientSelect();
-  renderClientList();
-  showToast('🗑 カルテを削除しました');
-}
-
-function openEdit(id) {
-  const karte = getKarte();
-  const c = karte.find(x => x.id === id);
-  if (!c) return;
-  document.getElementById('editId').value = c.id;
-  document.getElementById('editName').value = c.name || '';
-  document.getElementById('editSymptoms').value = c.symptoms || '';
-  document.getElementById('editTreatment').value = c.treatment || '';
-  document.getElementById('editHomecare').value = c.homecare || '';
-  document.getElementById('editNextVisit').value = c.nextVisit || '';
-  document.getElementById('editModal').classList.add('open');
-}
-
-function saveEdit() {
-  const id = document.getElementById('editId').value;
-  const karte = getKarte();
-  const idx = karte.findIndex(c => c.id === id);
-  if (idx === -1) return;
-  karte[idx] = {
-    ...karte[idx],
-    name: document.getElementById('editName').value,
-    symptoms: document.getElementById('editSymptoms').value,
-    treatment: document.getElementById('editTreatment').value,
-    homecare: document.getElementById('editHomecare').value,
-    nextVisit: document.getElementById('editNextVisit').value,
-    updatedAt: new Date().toLocaleDateString('ja-JP')
+// ===== CUSTOMER CRUD =====
+function saveCustomer() {
+  const id = document.getElementById('cu-id').value || genId();
+  const name = document.getElementById('cu-name').value.trim();
+  if (!name) { alert('氏名を入力してください'); return; }
+  const cu = {
+    id,
+    no: document.getElementById('cu-no').value.trim(),
+    name,
+    kana: document.getElementById('cu-kana').value.trim(),
+    gender: document.getElementById('cu-gender').value,
+    birth: document.getElementById('cu-birth').value,
+    job: document.getElementById('cu-job').value.trim(),
+    tel: document.getElementById('cu-tel').value.trim(),
+    email: document.getElementById('cu-email').value.trim(),
+    zip: document.getElementById('cu-zip').value.trim(),
+    address: document.getElementById('cu-address').value.trim(),
+    motive: document.getElementById('cu-motive').value.trim(),
+    memo: document.getElementById('cu-memo').value.trim(),
+    lastVisit: '', visitCount: 0, createdAt: nowStr()
   };
-  saveKarte(karte);
-  refreshClientSelect();
-  renderClientList();
-  closeModal();
-  showToast('✅ カルテを更新しました');
-}
-
-function closeModal() {
-  document.getElementById('editModal').classList.remove('open');
-}
-
-// ── ビフォーアフター ──
-let beforeDataUrl = null, afterDataUrl = null, mergedDataUrl = null;
-
-function readFile(file) {
-  return new Promise(res => { const r = new FileReader(); r.onload = e => res(e.target.result); r.readAsDataURL(file); });
-}
-
-async function onBeforeChange(e) {
-  const f = e.target.files[0]; if (!f) return;
-  beforeDataUrl = await readFile(f);
-  document.getElementById('beforePreview').src = beforeDataUrl;
-  document.getElementById('beforePreview').style.display = 'block';
-  document.getElementById('beforeIcon').style.display = 'none';
-  document.getElementById('beforeTxt').style.display = 'none';
-  clearMerge();
-}
-
-async function onAfterChange(e) {
-  const f = e.target.files[0]; if (!f) return;
-  afterDataUrl = await readFile(f);
-  document.getElementById('afterPreview').src = afterDataUrl;
-  document.getElementById('afterPreview').style.display = 'block';
-  document.getElementById('afterIcon').style.display = 'none';
-  document.getElementById('afterTxt').style.display = 'none';
-  clearMerge();
-}
-
-function clearMerge() {
-  mergedDataUrl = null;
-  document.getElementById('mergeResultCard').style.display = 'none';
-}
-
-function mergeImages() {
-  if (!beforeDataUrl || !afterDataUrl) { alert('ビフォーとアフターの両方の写真を選択してください'); return; }
-  const ls = document.getElementById('labelStyle').value;
-  const A = new Image(), B = new Image(); let loaded = 0;
-  const onLoad = () => {
-    if (++loaded < 2) return;
-    const GAP=8, LH=ls==='none'?0:46, PAD=14;
-    const h = Math.max(A.naturalHeight, B.naturalHeight);
-    const wA = Math.round(A.naturalWidth*(h/A.naturalHeight));
-    const wB = Math.round(B.naturalWidth*(h/B.naturalHeight));
-    const cv = document.getElementById('mergeCanvas');
-    cv.width = wA+wB+GAP+PAD*2; cv.height = h+LH+PAD*2;
-    const ctx = cv.getContext('2d');
-    ctx.fillStyle='#f4fbf6'; ctx.fillRect(0,0,cv.width,cv.height);
-    ctx.drawImage(A,PAD,PAD+LH,wA,h); ctx.drawImage(B,PAD+wA+GAP,PAD+LH,wB,h);
-    if (ls!=='none') {
-      const labs = ls==='ja'?['ビフォー','アフター']:['Before','After'];
-      [[PAD,wA,'#e76f51'],[PAD+wA+GAP,wB,'#52b788']].forEach(([x,w,c],i)=>{
-        ctx.fillStyle=c; ctx.beginPath(); ctx.roundRect(x,PAD,w,LH-6,8); ctx.fill();
-        ctx.fillStyle='#fff'; ctx.font='bold 20px sans-serif';
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(labs[i],x+w/2,PAD+(LH-6)/2);
-      });
-    }
-    ctx.strokeStyle='#fff'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.moveTo(PAD+wA+GAP/2,PAD); ctx.lineTo(PAD+wA+GAP/2,cv.height-PAD); ctx.stroke();
-    mergedDataUrl = cv.toDataURL('image/jpeg',0.92);
-    document.getElementById('mergeResult').src = mergedDataUrl;
-    document.getElementById('mergeResultCard').style.display = 'block';
-    document.getElementById('mergeResultCard').scrollIntoView({behavior:'smooth',block:'start'});
-  };
-  A.onload=onLoad; B.onload=onLoad; A.src=beforeDataUrl; B.src=afterDataUrl;
-}
-
-function downloadMerged() {
-  if (!mergedDataUrl) return;
-  const a = document.createElement('a'); a.href=mergedDataUrl; a.download='before_after.jpg'; a.click();
-}
-
-// ── メッセージ生成 ──
-async function generateMessage() {
-  const apiKey = 'sk-ant-api03-aiBGWNxnZZvPheuQL'+'w5sjVAIk5kXr5h71YSXfUtpMluItGa'+'rnrIXcIHx_JCsX6a7bL8G2d9Jbotw-gfZVZKLCA-RYPEnAAA';
-  const name = document.getElementById('clientName').value.trim();
-  const symptoms = document.getElementById('symptoms').value.trim();
-  if (!name && !symptoms) { alert('お名前か症状を入力してください'); return; }
-  const btn = document.getElementById('genBtn');
-  btn.disabled=true; btn.innerHTML='<span class="spinner"></span>AI生成中…';
-  const prompt = `あなたは整体院のスタッフです。以下のクライアント情報をもとに、LINEで送る個別メッセージを作成してください。
-【クライアント名】${name||'（未記入）'}
-【症状・状態】${document.getElementById('symptoms').value||'（未記入）'}
-【施術内容】${document.getElementById('treatment').value||'（未記入）'}
-【セルフケア】${document.getElementById('homecare').value||'（未記入）'}
-【次回来院】${document.getElementById('nextVisit').value||'（未記入）'}
-ルール：絵文字と記号で読みやすく整形、15〜20行以内、専門用語なし、最後に励ましのひとこと、冒頭に「━━━━━━━━━━」区切り線、マークダウン不使用`;
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,messages:[{role:'user',content:prompt}]})
-    });
-    const data = await res.json();
-    const text = data.content?.map(i=>i.text||'').join('')||'エラーが発生しました。';
-    document.getElementById('messageOutput').textContent = text;
-    document.getElementById('outputCard').style.display='block';
-    document.getElementById('outputCard').scrollIntoView({behavior:'smooth',block:'start'});
-  } catch(e) {
-    alert('エラーが発生しました。APIキーとネット接続を確認してください。');
+  const idx = customers.findIndex(x => x.id === id);
+  if (idx >= 0) {
+    cu.lastVisit = customers[idx].lastVisit;
+    cu.visitCount = customers[idx].visitCount;
+    cu.createdAt = customers[idx].createdAt;
+    customers[idx] = cu;
+  } else {
+    customers.push(cu);
   }
-  btn.disabled=false; btn.innerHTML='✨ 生成する';
+  save();
+  clearCustomerForm();
+  renderCustomerList();
+  populateCustomerSelect();
+  alert('顧客情報を保存しました');
 }
 
-function copyMessage() {
-  const text = document.getElementById('messageOutput').textContent;
-  navigator.clipboard.writeText(text).then(()=>showToast('✅ コピーしました！'));
+function editCustomer(id) {
+  const c = customers.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('cu-id').value = c.id;
+  document.getElementById('cu-no').value = c.no || '';
+  document.getElementById('cu-name').value = c.name;
+  document.getElementById('cu-kana').value = c.kana || '';
+  document.getElementById('cu-gender').value = c.gender || '';
+  document.getElementById('cu-birth').value = c.birth || '';
+  document.getElementById('cu-job').value = c.job || '';
+  document.getElementById('cu-tel').value = c.tel || '';
+  document.getElementById('cu-email').value = c.email || '';
+  document.getElementById('cu-zip').value = c.zip || '';
+  document.getElementById('cu-address').value = c.address || '';
+  document.getElementById('cu-motive').value = c.motive || '';
+  document.getElementById('cu-memo').value = c.memo || '';
+  document.querySelector('[onclick="showPanel(\'customers\')"]').click();
+  window.scrollTo(0,0);
 }
 
-function clearMsg() {
-  document.getElementById('clientSelect').value='';
-  ['clientName','symptoms','treatment','homecare','nextVisit'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('outputCard').style.display='none';
+function deleteCustomer(id) {
+  showModal('削除確認', '顧客データを削除しますか？', [
+    { label: '削除', cls: 'btn-danger', cb: () => {
+      customers = customers.filter(x => x.id !== id);
+      save(); renderCustomerList(); populateCustomerSelect(); closeModal();
+    }},
+    { label: 'キャンセル', cls: 'btn-secondary', cb: closeModal }
+  ]);
 }
 
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2500);
+function clearCustomerForm() {
+  ['cu-id','cu-no','cu-name','cu-kana','cu-gender','cu-birth','cu-job','cu-tel','cu-email','cu-zip','cu-address','cu-motive','cu-memo']
+    .forEach(id => { document.getElementById(id).value = ''; });
 }
+
+function renderCustomerList() {
+  const q = document.getElementById('cu-search').value.toLowerCase();
+  const tbody = document.getElementById('customer-tbody');
+  const list = customers.filter(c =>
+    !q || c.name.includes(q) || (c.kana||'').includes(q) || (c.tel||'').includes(q)
+  ).sort((a,b) => (a.no||'').localeCompare(b.no||'', undefined, {numeric:true}));
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">顧客データがありません</td></tr>'; return; }
+  tbody.innerHTML = list.map(c => `
+    <tr>
+      <td>${c.no || '-'}</td>
+      <td><strong>${c.name}</strong>${c.kana ? `<br><span style="font-size:11px;color:var(--text-sub)">${c.kana}</span>` : ''}</td>
+      <td>${c.tel || '-'}</td>
+      <td>${c.visitCount || 0}回</td>
+      <td>${c.lastVisit || '-'}</td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="editCustomer('${c.id}')">編集</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCustomer('${c.id}')">削除</button>
+      </td>
+    </tr>`).join('');
+}
+
+// ===== HISTORY =====
+function renderHistory() {
+  const q = document.getElementById('hi-search').value.toLowerCase();
+  const m = document.getElementById('hi-month').value;
+  const tbody = document.getElementById('history-tbody');
+  const list = history.filter(h =>
+    (!q || h.customerName.includes(q) || h.menu.includes(q)) &&
+    (!m || h.date.startsWith(m))
+  );
+  if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">履歴がありません</td></tr>'; return; }
+  tbody.innerHTML = list.map(h => `
+    <tr>
+      <td>${h.date}</td>
+      <td>${h.customerName}</td>
+      <td>${h.menu}</td>
+      <td>${fmt(h.price)}</td>
+      <td><span class="badge badge-blue">${h.pay}</span></td>
+      <td>${h.memo || '-'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteHistory('${h.id}')">削除</button></td>
+    </tr>`).join('');
+}
+
+function deleteHistory(id) {
+  showModal('削除確認', 'この履歴を削除しますか？', [
+    { label: '削除', cls: 'btn-danger', cb: () => { history = history.filter(x => x.id !== id); save(); renderHistory(); closeModal(); }},
+    { label: 'キャンセル', cls: 'btn-secondary', cb: closeModal }
+  ]);
+}
+
+// ===== DASHBOARD =====
+function renderDash() {
+  const td = today();
+  const tm = td.slice(0,7);
+  const todayH = history.filter(h => h.date === td);
+  const monthH = history.filter(h => h.date.startsWith(tm));
+  document.getElementById('stat-today').textContent = fmt(todayH.reduce((s,h) => s+h.price, 0));
+  document.getElementById('stat-today-count').textContent = todayH.length + '件';
+  document.getElementById('stat-month').textContent = fmt(monthH.reduce((s,h) => s+h.price, 0));
+  document.getElementById('stat-month-count').textContent = monthH.length + '件';
+  document.getElementById('stat-customers').textContent = customers.length;
+  const tbody = document.getElementById('recent-tbody');
+  const rec = history.slice(0,8);
+  tbody.innerHTML = rec.length ? rec.map(h => `
+    <tr><td>${h.date}</td><td>${h.customerName}</td><td>${h.menu}</td><td>${fmt(h.price)}</td></tr>`).join('')
+    : '<tr><td colspan="4" class="empty-state">履歴なし</td></tr>';
+}
+
+// ===== CSV EXPORT =====
+function exportCustomersCSV() {
+  const rows = [['顧客No','氏名','ふりがな','性別','郵便番号','住所','メールアドレス','電話番号','生年月日','職業','動機','来院回数','最終来院']];
+  customers.forEach(c => rows.push([c.no||'',c.name,c.kana||'',c.gender||'',c.zip||'',c.address||'',c.email||'',c.tel||'',c.birth||'',c.job||'',c.motive||'',c.visitCount||0,c.lastVisit||'']));
+  downloadCSV(rows, '顧客リスト_' + today() + '.csv');
+}
+
+function exportHistoryCSV() {
+  const rows = [['日付','顧客名','メニュー','金額','支払方法','メモ']];
+  history.forEach(h => rows.push([h.date,h.customerName,h.menu,h.price,h.pay,h.memo||'']));
+  downloadCSV(rows, '来院履歴_' + today() + '.csv');
+}
+
+function downloadCSV(rows, filename) {
+  const bom = '\uFEFF';
+  const csv = bom + rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\r\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+}
+
+// ===== CSV IMPORT =====
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('importZone').classList.remove('drag');
+  const file = e.dataTransfer.files[0];
+  if (file) processCSVFile(file);
+}
+
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) processCSVFile(file);
+  e.target.value = '';
+}
+
+function processCSVFile(file) {
+  const resultDiv = document.getElementById('importResult');
+  if (!file.name.endsWith('.csv')) {
+    resultDiv.innerHTML = '<div class="import-result error">❌ CSVファイルを選択してください</div>';
+    return;
+  }
+  resultDiv.innerHTML = '<div class="import-result info">⏳ 読み込み中...</div>';
+
+  // Shift-JIS と UTF-8 両対応
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    let text = e.target.result;
+    parseAndPreviewCSV(text);
+  };
+  // まず Shift-JIS で試みる
+  try {
+    reader.readAsText(file, 'Shift_JIS');
+  } catch {
+    reader.readAsText(file, 'UTF-8');
+  }
+}
+
+function parseCSVLine(line) {
+  const result = [];
+  let cur = '';
+  let inQ = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQ && line[i+1] === '"') { cur += '"'; i++; }
+      else inQ = !inQ;
+    } else if (ch === ',' && !inQ) {
+      result.push(cur); cur = '';
+    } else {
+      cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+function parseAndPreviewCSV(text) {
+  const resultDiv = document.getElementById('importResult');
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) {
+    resultDiv.innerHTML = '<div class="import-result error">❌ データが見つかりません</div>';
+    return;
+  }
+
+  const header = parseCSVLine(lines[0]);
+  // 囲い込み職人の列マッピング
+  const colMap = {
+    no:        header.findIndex(h => h.includes('顧客No') || h.includes('顧客no')),
+    name:      header.findIndex(h => h.includes('顧客名') && !h.includes('ふりがな')),
+    kana:      header.findIndex(h => h.includes('ふりがな')),
+    gender:    header.findIndex(h => h.includes('性別')),
+    zip:       header.findIndex(h => h.includes('郵便番号')),
+    addr1:     header.findIndex(h => h.includes('住所１') || h.includes('住所1')),
+    addr2:     header.findIndex(h => h.includes('住所２') || h.includes('住所2')),
+    tel1:      header.findIndex(h => h.includes('電話-1') || h.includes('電話1') || (h.includes('電話') && !h.includes('-2') && !h.includes('2'))),
+    tel2:      header.findIndex(h => h.includes('電話-2') || h.includes('電話2')),
+    email:     header.findIndex(h => h.includes('メール')),
+    birth:     header.findIndex(h => h.includes('生年月日')),
+    job:       header.findIndex(h => h.includes('職業')),
+    motive:    header.findIndex(h => h.includes('動機')),
+    lastVisit: header.findIndex(h => h.includes('最終来店') || h.includes('最終来院')),
+    visitCount:header.findIndex(h => h.includes('来店回数') || h.includes('来院回数')),
+  };
+
+  if (colMap.name < 0) {
+    resultDiv.innerHTML = '<div class="import-result error">❌ 「顧客名」列が見つかりません。囲い込み職人のCSV形式を確認してください</div>';
+    return;
+  }
+
+  const parsed = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = parseCSVLine(lines[i]);
+    if (!cols[colMap.name]?.trim()) continue;
+    const get = idx => idx >= 0 ? (cols[idx] || '').trim() : '';
+    const addr = [get(colMap.addr1), get(colMap.addr2)].filter(Boolean).join(' ');
+    // 生年月日を date 形式に変換
+    let birth = get(colMap.birth);
+    if (birth) {
+      // 1990/01/01 or 1990-01-01
+      birth = birth.replace(/\//g, '-').replace(/(\d{4})-(\d{1,2})-(\d{1,2})/, (_, y, m, d) =>
+        `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`);
+    }
+    parsed.push({
+      no: get(colMap.no),
+      name: get(colMap.name),
+      kana: get(colMap.kana),
+      gender: get(colMap.gender),
+      zip: get(colMap.zip),
+      address: addr,
+      tel: get(colMap.tel1),
+      email: get(colMap.email),
+      birth,
+      job: get(colMap.job),
+      motive: get(colMap.motive),
+      lastVisit: get(colMap.lastVisit).replace(/\//g,'-'),
+      visitCount: parseInt(get(colMap.visitCount)) || 0,
+    });
+  }
+
+  if (!parsed.length) {
+    resultDiv.innerHTML = '<div class="import-result error">❌ 有効なデータが見つかりません</div>';
+    return;
+  }
+
+  // 重複チェック（顧客No一致）
+  parsed.forEach(p => {
+    if (p.no && customers.find(c => c.no === p.no)) p._status = 'update';
+    else p._status = 'new';
+  });
+
+  pendingImport = parsed;
+  renderImportPreview(parsed);
+  resultDiv.innerHTML = `<div class="import-result success">✅ ${parsed.length}件を読み込みました。内容を確認して「インポート実行」をクリックしてください。</div>`;
+}
+
+function renderImportPreview(list) {
+  const card = document.getElementById('importPreviewCard');
+  card.style.display = 'block';
+  const newCount = list.filter(p => p._status === 'new').length;
+  const updCount = list.filter(p => p._status === 'update').length;
+  document.getElementById('importPreviewCount').textContent =
+    `新規追加: ${newCount}件  /  上書き更新: ${updCount}件`;
+  document.getElementById('importPreviewBody').innerHTML = list.map(p => `
+    <tr>
+      <td>${p.no || '-'}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.kana || '-'}</td>
+      <td>${p.tel || '-'}</td>
+      <td>${p.zip || '-'}</td>
+      <td style="max-width:160px;font-size:12px">${p.address || '-'}</td>
+      <td style="max-width:160px;font-size:12px">${p.email || '-'}</td>
+      <td>${p.job || '-'}</td>
+      <td><span class="badge ${p._status === 'new' ? 'badge-green' : 'badge-orange'}">${p._status === 'new' ? '新規' : '更新'}</span></td>
+    </tr>`).join('');
+}
+
+function confirmImport() {
+  if (!pendingImport.length) return;
+  let added = 0, updated = 0;
+  pendingImport.forEach(p => {
+    const existing = p.no ? customers.find(c => c.no === p.no) : null;
+    if (existing) {
+      Object.assign(existing, {
+        name: p.name, kana: p.kana, gender: p.gender,
+        zip: p.zip, address: p.address, tel: p.tel, email: p.email,
+        birth: p.birth, job: p.job, motive: p.motive,
+        lastVisit: p.lastVisit || existing.lastVisit,
+        visitCount: p.visitCount || existing.visitCount,
+      });
+      updated++;
+    } else {
+      customers.push({ id: genId(), visitCount: p.visitCount || 0, createdAt: nowStr(), ...p });
+      added++;
+    }
+  });
+  save();
+  pendingImport = [];
+  document.getElementById('importPreviewCard').style.display = 'none';
+  document.getElementById('importResult').innerHTML =
+    `<div class="import-result success">✅ インポート完了！　新規追加: ${added}件 / 更新: ${updated}件</div>`;
+  populateCustomerSelect();
+}
+
+function cancelImport() {
+  pendingImport = [];
+  document.getElementById('importPreviewCard').style.display = 'none';
+  document.getElementById('importResult').innerHTML = '';
+}
+
+// ===== MODAL =====
+function showModal(title, body, btns) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = `<p style="font-size:14px">${body}</p>`;
+  document.getElementById('modalBtns').innerHTML = '';
+  btns.forEach(b => {
+    const btn = document.createElement('button');
+    btn.className = 'btn ' + b.cls;
+    btn.textContent = b.label;
+    btn.onclick = b.cb;
+    document.getElementById('modalBtns').appendChild(btn);
+  });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+document.getElementById('modalOverlay').addEventListener('click', e => { if (e.target.id === 'modalOverlay') closeModal(); });
+
+// ===== INITIAL RENDER =====
+renderDash();
+populateCustomerSelect();
 </script>
 </body>
 </html>
